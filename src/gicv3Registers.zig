@@ -1,5 +1,7 @@
-const gic_gicd_base = gic_base; // gicd mmio base address
-const gic_gicc_base = gic_base + 0x10000; // gicc mmio base address
+const aarch64 = @import("aarch64.zig");
+
+const gic_gicd_base = aarch64.gic_base; // gicd mmio base address
+const gic_gicc_base = aarch64.gic_base + 0x10000; // gicc mmio base address
 
 const gic_gicd_int_per_reg = 32; // 32 interrupts per reg
 const gic_gicd_ipriority_per_reg = 4; // 4 priority per reg
@@ -43,7 +45,7 @@ const gicc_iar_spurious_intr = 0x3ff; // 1023 means spurious interrupt
 
 // 8.8 the gic distributor register map
 const gic_gicd_ctlr = gic_gicd_base + 0x000; // distributor control register
-const gic_gicd_typer = gic_gicd_base + 0x004; // interrupt controller type register
+const gic_gicd_type = gic_gicd_base + 0x004; // interrupt controller type register
 const gic_gicd_iidr = gic_gicd_base + 0x008; // distributor implementer identification register
 fn gic_gicd_igroupr(n: usize) usize {
     return gic_gicd_base + 0x080 + ((n) * 4);
@@ -95,59 +97,59 @@ const gic_gicd_icfgr_level = (0x0); // level-sensitive
 const gic_gicd_icfgr_edge = (0x2); // edge-triggered
 
 // register access macros for gicc
-const reg_gic_gicc_ctlr = @ptrCast(*volatile u64, gic_gicc_ctlr);
-const reg_gic_gicc_pmr = @ptrCast(*volatile u64, gic_gicc_pmr);
-const reg_gic_gicc_bpr = @ptrCast(*volatile u64, gic_gicc_bpr);
-const reg_gic_gicc_iar = @ptrCast(*volatile u64, gic_gicc_iar);
-const reg_gic_gicc_eoir = @ptrCast(*volatile u64, gic_gicc_eoir);
-const reg_gic_gicc_rpr = @ptrCast(*volatile u64, gic_gicc_rpr);
-const reg_gic_gicc_hpir = @ptrCast(*volatile u64, gic_gicc_hpir);
-const reg_gic_gicc_abpr = @ptrCast(*volatile u64, gic_gicc_abpr);
-const reg_gic_gicc_iidr = @ptrCast(*volatile u64, gic_gicc_iidr);
+const reg_gic_gicc_ctlr = @ptrCast(*volatile u32, gic_gicc_ctlr);
+const reg_gic_gicc_pmr = @ptrCast(*volatile u32, gic_gicc_pmr);
+const reg_gic_gicc_bpr = @ptrCast(*volatile u32, gic_gicc_bpr);
+const reg_gic_gicc_iar = @ptrCast(*volatile u32, gic_gicc_iar);
+const reg_gic_gicc_eoir = @ptrCast(*volatile u32, gic_gicc_eoir);
+const reg_gic_gicc_rpr = @ptrCast(*volatile u32, gic_gicc_rpr);
+const reg_gic_gicc_hpir = @ptrCast(*volatile u32, gic_gicc_hpir);
+const reg_gic_gicc_abpr = @ptrCast(*volatile u32, gic_gicc_abpr);
+const reg_gic_gicc_iidr = @ptrCast(*volatile u32, gic_gicc_iidr);
 
 // register access macros for gicd
-const reg_gic_gicd_ctlr = @ptrCast(*volatile u64, gic_gicd_ctlr);
-const reg_gic_gicd_type = @ptrCast(*volatile u64, gic_gicd_type);
-const reg_gic_gicd_iidr = @ptrCast(*volatile u64, gic_gicd_iidr);
+const reg_gic_gicd_ctlr = @ptrCast(*volatile u32, gic_gicd_ctlr);
+const reg_gic_gicd_type = @ptrCast(*volatile u32, gic_gicd_type);
+const reg_gic_gicd_iidr = @ptrCast(*volatile u32, gic_gicd_iidr);
 
-const reg_gic_gicd_sgir = @ptrCast(*volatile u64, gic_gicd_sgir);
+const reg_gic_gicd_sgir = @ptrCast(*volatile u32, gic_gicd_sgir);
 
-fn reg_gic_gicd_igroupr(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_igroupr(n));
+fn reg_gic_gicd_igroupr(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_igroupr(n));
 }
-fn reg_gic_gicd_isenabler(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_isenabler(n));
+fn reg_gic_gicd_isenabler(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_isenabler(n));
 }
-fn reg_gic_gicd_icenabler(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_icenabler(n));
+fn reg_gic_gicd_icenabler(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_icenabler(n));
 }
-fn reg_gic_gicd_ispendr(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_ispendr(n));
+fn reg_gic_gicd_ispendr(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_ispendr(n));
 }
-fn reg_gic_gicd_icpendr(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_icpendr(n));
+fn reg_gic_gicd_icpendr(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_icpendr(n));
 }
-fn reg_gic_gicd_isactiver(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_isactiver(n));
+fn reg_gic_gicd_isactiver(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_isactiver(n));
 }
-fn reg_gic_gicd_icactiver(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_icactiver(n));
+fn reg_gic_gicd_icactiver(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_icactiver(n));
 }
-fn reg_gic_gicd_ipriorityr(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_ipriorityr(n));
+fn reg_gic_gicd_ipriorityr(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_ipriorityr(n));
 }
-fn reg_gic_gicd_itargetsr(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_itargetsr(n));
+fn reg_gic_gicd_itargetsr(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_itargetsr(n));
 }
-fn reg_gic_gicd_icfgr(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_icfgr(n));
+fn reg_gic_gicd_icfgr(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_icfgr(n));
 }
-fn reg_gic_gicd_nscar(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_nscar(n));
+fn reg_gic_gicd_nscar(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_nscar(n));
 }
-fn reg_gic_gicd_cpendsgir(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_cpendsgir(n));
+fn reg_gic_gicd_cpendsgir(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_cpendsgir(n));
 }
-fn reg_gic_gicd_spendsgir(n: usize) *volatile u64 {
-    return @ptrCast(*volatile u64, gic_gicd_spendsgir(n));
+fn reg_gic_gicd_spendsgir(n: usize) *volatile u32 {
+    return @ptrCast(*volatile u32, gic_gicd_spendsgir(n));
 }
