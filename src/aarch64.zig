@@ -1,12 +1,18 @@
-const daif_irq_bit = 1 << 1; // IRQ mask bit
+pub const daif_irq_bit: u8 = 1 << 1; // IRQ mask bit
 
-const timer_irq = 27;
+pub const timer_irq = 27;
 
-const qemu_virt_gic_base = 0x08000000;
-const qemu_virt_gic_int_max = 64;
+pub const qemu_virt_gic_base = 0x08000000;
+pub const qemu_virt_gic_int_max = 64;
+pub const qemu_virt_gic_intno_spio = 32;
+pub const qemu_virt_gic_intno_ppio = 16;
 
-const gic_base = qemu_virt_gic_base;
-const gic_int_max = qemu_virt_gic_int_max;
+pub const gic_base = qemu_virt_gic_base;
+pub const gic_int_max = qemu_virt_gic_int_max;
+pub const gic_pri_shift = 4;
+pub const gic_intno_ppi0 = qemu_virt_gic_intno_ppio;
+
+pub const gic_intno_spi0 = qemu_virt_gic_intno_spio;
 
 // DAIF, Interrupt Mask Bits
 // 	Allows access to the interrupt mask bits.
@@ -25,13 +31,23 @@ pub fn raw_read_daif() u32 {
 }
 
 pub fn enable_irq() void {
-    asm volatile ("msr DAIFClr, %[daif_irq_bit]"(daif_irq_bit));
+    asm volatile ("msr DAIFClr, %[daif_irq_bit]"
+        :
+        : [daif_irq_bit] "i" (daif_irq_bit),
+    );
 }
 
 pub fn disable_irq() void {
-    asm volatile ("msr DAIFSet, %[daif_irq_bit]"(daif_irq_bit));
+    asm volatile ("msr DAIFSet, %[daif_irq_bit]"
+        :
+        : [daif_irq_bit] "i" (daif_irq_bit),
+    );
 }
 
 pub fn raw_write_daif(daif: u32) void {
-    asm volatile ("msr DAIF, %[daif]"(daif));
+    _ = daif;
+    asm volatile ("msr DAIF, %[daif]"
+        :
+        : [daif] "r" (daif),
+    );
 }

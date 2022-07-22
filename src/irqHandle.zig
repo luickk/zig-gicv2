@@ -1,89 +1,123 @@
 const psw = @import("procStatWord.zig");
 const irqRegs = @import("irqRegisters.zig");
 const gic = @import("gicv3.zig");
+const utils = @import("utils.zig");
 
-// fn handle_exception(exc: *ExceptionFrame) void {
-// 	uart_puts("An exception occur:\n");
-// 	uart_puts("exc_type: ");
-// 	uart_puthex(exc->exc_type);
-// 	uart_puts("\nESR: "); uart_puthex(exc->exc_esr);
-// 	uart_puts("  SP: "); uart_puthex(exc->exc_sp);
-// 	uart_puts(" ELR: "); uart_puthex(exc->exc_elr);
-// 	uart_puts(" SPSR: "); uart_puthex(exc->exc_spsr);
-// 	uart_puts("\n x0: "); uart_puthex(exc->x0);
-// 	uart_puts("  x1: "); uart_puthex(exc->x1);
-// 	uart_puts("  x2: "); uart_puthex(exc->x2);
-// 	uart_puts("  x3: "); uart_puthex(exc->x3);
-// 	uart_puts("\n x4: "); uart_puthex(exc->x4);
-// 	uart_puts("  x5: "); uart_puthex(exc->x5);
-// 	uart_puts("  x6: "); uart_puthex(exc->x6);
-// 	uart_puts("  x7: "); uart_puthex(exc->x7);
-// 	uart_puts("\n x8: "); uart_puthex(exc->x8);
-// 	uart_puts("  x9: "); uart_puthex(exc->x9);
-// 	uart_puts(" x10: "); uart_puthex(exc->x10);
-// 	uart_puts(" x11: "); uart_puthex(exc->x11);
-// 	uart_puts("\nx12: "); uart_puthex(exc->x12);
-// 	uart_puts(" x13: "); uart_puthex(exc->x13);
-// 	uart_puts(" x14: "); uart_puthex(exc->x14);
-// 	uart_puts(" x15: "); uart_puthex(exc->x15);
-// 	uart_puts("\nx16: "); uart_puthex(exc->x16);
-// 	uart_puts(" x17: "); uart_puthex(exc->x17);
-// 	uart_puts(" x18: "); uart_puthex(exc->x18);
-// 	uart_puts(" x19: "); uart_puthex(exc->x19);
-// 	uart_puts("\nx20: "); uart_puthex(exc->x20);
-// 	uart_puts(" x21: "); uart_puthex(exc->x21);
-// 	uart_puts(" x22: "); uart_puthex(exc->x22);
-// 	uart_puts(" x23: "); uart_puthex(exc->x23);
-// 	uart_puts("\nx24: "); uart_puthex(exc->x24);
-// 	uart_puts(" x25: "); uart_puthex(exc->x25);
-// 	uart_puts(" x26: "); uart_puthex(exc->x26);
-// 	uart_puts(" x27: "); uart_puthex(exc->x27);
-// 	uart_puts("\nx28: "); uart_puthex(exc->x28);
-// 	uart_puts(" x29: "); uart_puthex(exc->x29);
-// 	uart_puts(" x30: "); uart_puthex(exc->x30);
-// }
+fn handleException(exc: *gic.ExceptionFrame) void {
+    utils.qemuDPrint("An exception occur:\n");
+    utils.qemuDPrint("exc_type: ");
+    utils.qemuUintPrint(exc.exc_type, utils.PrintStyle.string);
+    utils.qemuDPrint("\nESR: ");
+    utils.qemuUintPrint(exc.exc_esr, utils.PrintStyle.string);
+    utils.qemuDPrint("  SP: ");
+    utils.qemuUintPrint(exc.exc_sp, utils.PrintStyle.string);
+    utils.qemuDPrint(" ELR: ");
+    utils.qemuUintPrint(exc.exc_elr, utils.PrintStyle.string);
+    utils.qemuDPrint(" SPSR: ");
+    utils.qemuUintPrint(exc.exc_spsr, utils.PrintStyle.string);
+    utils.qemuDPrint("\n x0: ");
+    utils.qemuUintPrint(exc.x0, utils.PrintStyle.string);
+    utils.qemuDPrint("  x1: ");
+    utils.qemuUintPrint(exc.x1, utils.PrintStyle.string);
+    utils.qemuDPrint("  x2: ");
+    utils.qemuUintPrint(exc.x2, utils.PrintStyle.string);
+    utils.qemuDPrint("  x3: ");
+    utils.qemuUintPrint(exc.x3, utils.PrintStyle.string);
+    utils.qemuDPrint("\n x4: ");
+    utils.qemuUintPrint(exc.x4, utils.PrintStyle.string);
+    utils.qemuDPrint("  x5: ");
+    utils.qemuUintPrint(exc.x5, utils.PrintStyle.string);
+    utils.qemuDPrint("  x6: ");
+    utils.qemuUintPrint(exc.x6, utils.PrintStyle.string);
+    utils.qemuDPrint("  x7: ");
+    utils.qemuUintPrint(exc.x7, utils.PrintStyle.string);
+    utils.qemuDPrint("\n x8: ");
+    utils.qemuUintPrint(exc.x8, utils.PrintStyle.string);
+    utils.qemuDPrint("  x9: ");
+    utils.qemuUintPrint(exc.x9, utils.PrintStyle.string);
+    utils.qemuDPrint(" x10: ");
+    utils.qemuUintPrint(exc.x10, utils.PrintStyle.string);
+    utils.qemuDPrint(" x11: ");
+    utils.qemuUintPrint(exc.x11, utils.PrintStyle.string);
+    utils.qemuDPrint("\nx12: ");
+    utils.qemuUintPrint(exc.x12, utils.PrintStyle.string);
+    utils.qemuDPrint(" x13: ");
+    utils.qemuUintPrint(exc.x13, utils.PrintStyle.string);
+    utils.qemuDPrint(" x14: ");
+    utils.qemuUintPrint(exc.x14, utils.PrintStyle.string);
+    utils.qemuDPrint(" x15: ");
+    utils.qemuUintPrint(exc.x15, utils.PrintStyle.string);
+    utils.qemuDPrint("\nx16: ");
+    utils.qemuUintPrint(exc.x16, utils.PrintStyle.string);
+    utils.qemuDPrint(" x17: ");
+    utils.qemuUintPrint(exc.x17, utils.PrintStyle.string);
+    utils.qemuDPrint(" x18: ");
+    utils.qemuUintPrint(exc.x18, utils.PrintStyle.string);
+    utils.qemuDPrint(" x19: ");
+    utils.qemuUintPrint(exc.x19, utils.PrintStyle.string);
+    utils.qemuDPrint("\nx20: ");
+    utils.qemuUintPrint(exc.x20, utils.PrintStyle.string);
+    utils.qemuDPrint(" x21: ");
+    utils.qemuUintPrint(exc.x21, utils.PrintStyle.string);
+    utils.qemuDPrint(" x22: ");
+    utils.qemuUintPrint(exc.x22, utils.PrintStyle.string);
+    utils.qemuDPrint(" x23: ");
+    utils.qemuUintPrint(exc.x23, utils.PrintStyle.string);
+    utils.qemuDPrint("\nx24: ");
+    utils.qemuUintPrint(exc.x24, utils.PrintStyle.string);
+    utils.qemuDPrint(" x25: ");
+    utils.qemuUintPrint(exc.x25, utils.PrintStyle.string);
+    utils.qemuDPrint(" x26: ");
+    utils.qemuUintPrint(exc.x26, utils.PrintStyle.string);
+    utils.qemuDPrint(" x27: ");
+    utils.qemuUintPrint(exc.x27, utils.PrintStyle.string);
+    utils.qemuDPrint("\nx28: ");
+    utils.qemuUintPrint(exc.x28, utils.PrintStyle.string);
+    utils.qemuDPrint(" x29: ");
+    utils.qemuUintPrint(exc.x29, utils.PrintStyle.string);
+    utils.qemuDPrint(" x30: ");
+    utils.qemuUintPrint(exc.x30, utils.PrintStyle.string);
+    utils.qemuDPrint("\n");
+}
 
-fn irq_handle(exc: *gic.ExceptionFrame) void {
+fn irqHandle(exc: *gic.ExceptionFrame) void {
     var psw_temp: psw.psw_t = undefined;
     var irq: gic.irq_no = undefined;
     var rc: u32 = undefined;
 
-    psw_temp.psw_disable_and_save_interrupt(&psw_temp);
+    psw.psw_disable_and_save_interrupt(&psw_temp);
     rc = gic.gic_v3_find_pending_irq(exc, &irq);
     if (rc != 0) {
-        // uart_puts("IRQ not found!\n");
-        psw_temp.psw_restore_interrupt(&psw_temp);
+        // utils.qemuDPrint("IRQ not found!\n");
+        psw.psw_restore_interrupt(&psw_temp);
         return;
+    } else {
+        utils.qemuDPrint("IRQ found: ");
+        utils.qemuUintPrint(irq, utils.PrintStyle.string);
+        utils.qemuDPrint("\n");
     }
-    // else{
-    // 	uart_puts("IRQ found: ");
-    // 	uart_puthex(irq);
-    // 	uart_puts("\n");
-    // }
     gic.gicd_disable_int(irq); // Mask this irq
     gic.gic_v3_eoi(irq); // Send EOI for this irq line
     // timer_handler();
     gic.gicd_enable_int(irq); // unmask this irq line
 }
 
-export fn common_trap_handler(exc: *gic.ExceptionFrame) void {
-    // uart_puts("\nException Handler! (");
-    //handle_exception(exc);
+pub fn common_trap_handler(exc: *gic.ExceptionFrame) callconv(.C) void {
 
-    if ((exc.exc_type & 0xff) == irqRegs.aarch64_exc_sync_spx) {
-        // uart_puts("AARCH64_EXC_SYNC_SPX)\n");
-        // handle_exception(exc);
+    // only handling synchronous ints
+    handleException(exc);
 
-        // ti_update_preempt_count(ti, THR_EXCCNT_SHIFT, 1);
-        // psw_enable_interrupt();
-        // hal_handle_exception(exc);
-        // psw_disable_interrupt();
-        // ti_update_preempt_count(ti, THR_EXCCNT_SHIFT, -1);
-    }
+    // irqHandle(exc);
 
-    if ((exc.exc_type & 0xff) == irqRegs.aarch64_exc_irq_spx) {
-        // uart_puts("AARCH64_EXC_IRQ_SPX)\n");
-        irq_handle(exc);
-    }
+    // differentiating by sync/ async interrupt
+    // if ((exc.exc_type & 0xff) == irqRegs.aarch64_exc_sync_spx) {
+    //     utils.qemuDPrint("sync_spx int\n");
+    //     handleException(exc);
+    // }
+
+    // if ((exc.exc_type & 0xff) == irqRegs.aarch64_exc_irq_spx) {
+    //     utils.qemuDPrint("irq_spx int!!\n");
+    //     irqHandle(exc);
+    // }
     return;
 }
