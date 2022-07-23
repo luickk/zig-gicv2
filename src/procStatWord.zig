@@ -1,4 +1,4 @@
-const aarch64 = @import("aarch64.zig");
+const irHandle = @import("irHandle.zig");
 
 pub const psw_t: type = u64; // Processor status word
 
@@ -8,8 +8,8 @@ pub fn psw_disable_and_save_interrupt(pswp: *psw_t) void {
     var psw: psw_t = undefined;
 
     // save psw
-    psw = aarch64.raw_read_daif();
-    aarch64.enable_irq();
+    psw = irHandle.raw_read_daif();
+    irHandle.enable_irq();
     pswp.* = psw;
 }
 
@@ -19,5 +19,5 @@ pub fn psw_restore_interrupt(pswp: *psw_t) void {
     var psw: psw_t = undefined;
 
     psw = pswp.*;
-    aarch64.raw_write_daif(@truncate(u32, psw));
+    irHandle.raw_write_daif(@truncate(u32, psw));
 }

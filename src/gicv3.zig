@@ -1,5 +1,4 @@
 const regs = @import("gicv3Registers.zig");
-const aarch64 = @import("aarch64.zig");
 const utils = @import("utils.zig");
 
 // todo => consider removing extra type for irq_no. no need for obscuring...
@@ -7,6 +6,7 @@ pub const irq_no: type = u32;
 
 pub const ExceptionFrame = extern struct {
     exc_type: u64,
+    // Exception Syndrome Register: https://developer.arm.com/documentation/ddi0595/2020-12/AArch64-Registers/ESR-EL1--Exception-Syndrome-Register--EL1-
     exc_esr: u64,
     exc_sp: u64,
     exc_elr: u64,
@@ -79,35 +79,35 @@ fn init_gicd() void {
     regs.reg_gic_gicd_ctlr.* = regs.gic_gicd_ctlr_disable;
 
     // disable all irqs
-    regs_nr = (aarch64.gic_int_max + regs.gic_gicd_int_per_reg - 1) / regs.gic_gicd_int_per_reg;
+    regs_nr = (regs.gic_int_max + regs.gic_gicd_int_per_reg - 1) / regs.gic_gicd_int_per_reg;
     while (regs_nr > i) : (i += 1) {
         regs.reg_gic_gicd_icenabler(i).* = ~@as(u32, 0);
     }
     i = 0;
 
     // clear all pending irqs
-    regs_nr = (aarch64.gic_int_max + regs.gic_gicd_int_per_reg - 1) / regs.gic_gicd_int_per_reg;
+    regs_nr = (regs.gic_int_max + regs.gic_gicd_int_per_reg - 1) / regs.gic_gicd_int_per_reg;
     while (regs_nr > i) : (i += 1) {
         regs.reg_gic_gicd_icpendr(i).* = ~@as(u32, 0);
     }
     i = 0;
 
     // set all of interrupt priorities as the lowest priority
-    regs_nr = (aarch64.gic_int_max + regs.gic_gicd_ipriority_per_reg - 1) / regs.gic_gicd_ipriority_per_reg;
+    regs_nr = (regs.gic_int_max + regs.gic_gicd_ipriority_per_reg - 1) / regs.gic_gicd_ipriority_per_reg;
     while (regs_nr > i) : (i += 1) {
         regs.reg_gic_gicd_ipriorityr(i).* = ~@as(u32, 0);
     }
     i = 0;
 
     // set target of all of shared peripherals to processor 0
-    i = aarch64.gic_intno_spi0 / regs.gic_gicd_itargetsr_per_reg;
-    while ((aarch64.gic_int_max + (regs.gic_gicd_itargetsr_per_reg - 1)) / regs.gic_gicd_itargetsr_per_reg > i) : (i += 1) {
+    i = regs.gic_intno_spi0 / regs.gic_gicd_itargetsr_per_reg;
+    while ((regs.gic_int_max + (regs.gic_gicd_itargetsr_per_reg - 1)) / regs.gic_gicd_itargetsr_per_reg > i) : (i += 1) {
         regs.reg_gic_gicd_itargetsr(i).* = @as(u32, regs.gic_gicd_itargetsr_core0_target_bmap);
     }
 
     // set trigger type for all peripheral interrupts level triggered
-    i = aarch64.gic_intno_ppi0 / regs.gic_gicd_icfgr_per_reg;
-    while ((aarch64.gic_int_max + (regs.gic_gicd_icfgr_per_reg - 1)) / regs.gic_gicd_icfgr_per_reg > i) : (i += 1) {
+    i = regs.gic_intno_ppi0 / regs.gic_gicd_icfgr_per_reg;
+    while ((regs.gic_int_max + (regs.gic_gicd_icfgr_per_reg - 1)) / regs.gic_gicd_icfgr_per_reg > i) : (i += 1) {
         regs.reg_gic_gicd_icfgr(i).* = regs.gic_gicd_icfgr_level;
     }
 
@@ -193,11 +193,6 @@ pub fn gic_v3_initialize() void {
     init_gicd();
     init_gicc();
 
-    // gicd_config(aarch64.timer_irq, regs.gic_gicd_icfgr_edge);
-    // gicd_set_priority(aarch64.timer_irq, 0 << aarch64.gic_pri_shift); // set priority
-    // gicd_set_target(aarch64.timer_irq, 0x1); // processor 0
-    // gicd_clear_pending(aarch64.timer_irq);
-    // gicd_enable_int(aarch64.timer_irq);
     utils.qemuDPrint("gicv3 initialized \n");
 }
 
@@ -208,7 +203,7 @@ pub fn gic_v3_find_pending_irq(exception_frame: *ExceptionFrame, irqp: *irq_no) 
     _ = exception_frame;
     var rc: u32 = undefined;
     var i: irq_no = 0;
-    while (aarch64.gic_int_max > i) : (i += 1) {
+    while (regs.gic_int_max > i) : (i += 1) {
         if (gicd_probe_pending(i)) {
             rc = 0;
             irqp.* = i;

@@ -1,7 +1,33 @@
 const psw = @import("procStatWord.zig");
-const irqRegs = @import("irqRegisters.zig");
 const gic = @import("gicv3.zig");
 const utils = @import("utils.zig");
+
+pub const daifIrqBit: u8 = 1 << 1; // IRQ mask bit
+
+// aarch64 exception types
+// current el with sp0
+pub const ExcTypeSp0 = enum(u8) {
+    syncSp0 = 0x1, // synchronous
+    irqSp0 = 0x2, // irq/virq
+    fiqSp0 = 0x3, // fiq/vfiq
+    serrSp0 = 0x4, // serror/vserror
+};
+
+// current el with spx
+pub const ExcTypeSpx = enum(u8) {
+    syncSpx = 0x11,
+    irqSpx = 0x12,
+    fiqSpx = 0x13,
+    serrSpx = 0x14,
+};
+
+// lower el using aarch64
+pub const ExcTypeLower = enum(u8) {
+    sync = 0x21,
+    irq = 0x22,
+    fiq = 0x23,
+    serr = 0x24,
+};
 
 fn handleException(exc: *gic.ExceptionFrame) void {
     utils.qemuDPrint("An exception occur:\n");
@@ -80,7 +106,27 @@ fn handleException(exc: *gic.ExceptionFrame) void {
     utils.qemuDPrint("\n");
 }
 
-fn irqHandle(exc: *gic.ExceptionFrame) void {
+pub fn common_trap_handler(exc: *gic.ExceptionFrame) callconv(.C) void {
+
+    // only handling synchronous ints
+    handleException(exc);
+
+    // irHandle(exc);
+
+    // differentiating by sync/ async interrupt
+    // if ((exc.exc_type & 0xff) == irqRegs.aarch64_exc_sync_spx) {
+    //     utils.qemuDPrint("sync_spx int\n");
+    //     handleException(exc);
+    // }
+
+    // if ((exc.exc_type & 0xff) == irqRegs.aarch64_exc_irq_spx) {
+    //     utils.qemuDPrint("irq_spx int!!\n");
+    //     irHandle(exc);
+    // }
+    return;
+}
+
+fn irHandle(exc: *gic.ExceptionFrame) void {
     var psw_temp: psw.psw_t = undefined;
     var irq: gic.irq_no = undefined;
     var rc: u32 = undefined;
@@ -102,22 +148,40 @@ fn irqHandle(exc: *gic.ExceptionFrame) void {
     gic.gicd_enable_int(irq); // unmask this irq line
 }
 
-pub fn common_trap_handler(exc: *gic.ExceptionFrame) callconv(.C) void {
+// DAIF, Interrupt Mask Bits
+//  Allows access to the interrupt mask bits.
+//  D, bit [9]: Debug exceptions.
+//  A, bit [8]: SError (System Error) mask bit.
+//  I, bit [7]: IRQ mask bit.
+//  F, bit [6]: FIQ mask bit.
+//  value:
+//      0 Exception not masked.
+//      1 Exception masked.
+pub fn raw_read_daif() u32 {
+    var daif: u32 = asm volatile ("mrs %[daif], DAIF"
+        : [daif] "=r" (-> u32),
+    );
+    return daif;
+}
 
-    // only handling synchronous ints
-    handleException(exc);
+pub fn enable_irq() void {
+    asm volatile ("msr DAIFClr, %[daif_irq_bit]"
+        :
+        : [daif_irq_bit] "i" (daifIrqBit),
+    );
+}
 
-    // irqHandle(exc);
+pub fn disable_irq() void {
+    asm volatile ("msr DAIFSet, %[daif_irq_bit]"
+        :
+        : [daif_irq_bit] "i" (daifIrqBit),
+    );
+}
 
-    // differentiating by sync/ async interrupt
-    // if ((exc.exc_type & 0xff) == irqRegs.aarch64_exc_sync_spx) {
-    //     utils.qemuDPrint("sync_spx int\n");
-    //     handleException(exc);
-    // }
-
-    // if ((exc.exc_type & 0xff) == irqRegs.aarch64_exc_irq_spx) {
-    //     utils.qemuDPrint("irq_spx int!!\n");
-    //     irqHandle(exc);
-    // }
-    return;
+pub fn raw_write_daif(daif: u32) void {
+    _ = daif;
+    asm volatile ("msr DAIF, %[daif]"
+        :
+        : [daif] "r" (daif),
+    );
 }
