@@ -75,3 +75,15 @@ pub fn qemuUintPrint(num: u64, print_style: PrintStyle) void {
         putChar(str[j]);
     }
 }
+
+// from zigs std lib
+pub const IntToEnumError = error{InvalidEnumTag};
+pub fn intToEnum(comptime EnumTag: type, tag_int: anytype) IntToEnumError!EnumTag {
+    inline for (@typeInfo(EnumTag).Enum.fields) |f| {
+        const this_tag_value = @field(EnumTag, f.name);
+        if (tag_int == @enumToInt(this_tag_value)) {
+            return this_tag_value;
+        }
+    }
+    return error.InvalidEnumTag;
+}
