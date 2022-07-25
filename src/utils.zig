@@ -40,7 +40,7 @@ pub fn reverseString(str: [*]u8, len: usize) void {
         end -= 1;
     }
 }
-pub fn qemuDPrint(comptime print_string: []const u8) void {
+pub fn qemuDPrint(print_string: []const u8) void {
     for (print_string) |ch| {
         putChar(ch);
     }
@@ -48,15 +48,15 @@ pub fn qemuDPrint(comptime print_string: []const u8) void {
 
 pub fn qemuUintPrint(num: u64, print_style: PrintStyle) void {
     var str = [_]u8{0} ** 20;
-
-    if (num == 0) {
-        str[0] = 0;
-        return;
-    }
-
     var rem: u64 = 0;
     var i: u8 = 0;
     var num_i = num;
+
+    if (num == 0) {
+        putChar(0);
+        return;
+    }
+
     while (num_i != 0) {
         rem = @mod(num_i, @enumToInt(print_style));
         if (rem > 9) {

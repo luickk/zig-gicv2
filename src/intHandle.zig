@@ -1,32 +1,30 @@
-const psw = @import("procStatWord.zig");
 const gic = @import("gicv3.zig");
 const Gicc = gic.Gicc;
 const Gicd = gic.Gicd;
+
+const psw = @import("psw.zig");
+const espP = @import("espParse.zig");
 const utils = @import("utils.zig");
 
 pub const daifIrqBit: u8 = 1 << 1; // IRQ mask bit
 
 pub fn common_trap_handler(exc: *gic.ExceptionFrame) callconv(.C) void {
     handleException(exc);
-
+    // only required for asyn interrupts..
+    // intHandle(exc);
     return;
 }
 
 fn intHandle(exc: *gic.ExceptionFrame) void {
-    var psw_temp: psw.psw_t = undefined;
+    var psw_temp: u64 = undefined;
     var irq: gic.irqNo = undefined;
     var rc: u32 = undefined;
 
     psw.pswDisableAndSaveInterrupt(&psw_temp);
     rc = Gicc.gicV3FindPendingIrq(exc, &irq);
     if (rc != 0) {
-        // utils.qemuDPrint("IRQ not found!\n");
         psw.psw_restore_interrupt(&psw_temp);
         return;
-    } else {
-        utils.qemuDPrint("IRQ found: ");
-        utils.qemuUintPrint(irq, utils.PrintStyle.string);
-        utils.qemuDPrint("\n");
     }
     Gicd.gicdDisableInt(irq); // Mask this irq
     Gicc.gicV3Eoi(irq); // Send EOI for this irq line
@@ -39,19 +37,26 @@ fn handleException(exc: *gic.ExceptionFrame) void {
     utils.qemuUintPrint(exc.elr_el1, utils.PrintStyle.string);
     utils.qemuDPrint(", esr: ");
     utils.qemuUintPrint(exc.esr_el1, utils.PrintStyle.string);
-    utils.qemuDPrint(", sps: ");
-    utils.qemuUintPrint(exc.spsr_el1, utils.PrintStyle.string);
     utils.qemuDPrint("\n");
 
+    utils.qemuDPrint("(");
     for (exc.regs) |reg, i| {
+        utils.qemuDPrint("x");
         utils.qemuUintPrint(i, utils.PrintStyle.string);
         utils.qemuDPrint(":");
         utils.qemuUintPrint(reg, utils.PrintStyle.string);
         utils.qemuDPrint(", ");
-        if (i % 3 == 0) {
-            utils.qemuDPrint("\n");
-        }
     }
+    utils.qemuDPrint(") \n");
+
+    var esp = espP.EspReg{ .val = exc.esr_el1 };
+    var ec = utils.intToEnum(espP.ExceptionClass, esp.parts.ec) catch {
+        utils.qemuDPrint("esp exception class not found \n");
+        return;
+    };
+    utils.qemuDPrint("Exception Class(from esp reg): ");
+    utils.qemuDPrint(@tagName(ec));
+    utils.qemuDPrint("\n");
 }
 
 // DAIF, Interrupt Mask Bits
