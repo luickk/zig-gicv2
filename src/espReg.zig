@@ -1,18 +1,3 @@
-pub const EspReg = union {
-    val: u64,
-    parts: struct {
-        // Instruction Specific Syndrome [24:0]
-        iss: u25,
-        //  Condition code valid [24]
-        cv: u1,
-        // Instruction Length for synchronous exceptions [25]
-        il: u1,
-        // exception class [31:26]
-        ec: u6,
-        _: u31,
-    },
-};
-
 pub const ExceptionClass = enum(u6) {
     unknownReason = 0b000000,
     trappedWF = 0b000001,
