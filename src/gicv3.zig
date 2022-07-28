@@ -50,15 +50,15 @@ pub const Gicc = struct {
     }
 
     // send end of interrupt to irq line for gic
-    // @param[in] ctrlr   irq controller information
-    // @param[in] irq     irq number
+    // ctrlr   irq controller information
+    // irq     irq number
     pub fn gicV3Eoi(irq: irqNo) void {
         Gicd.gicdClearPending(irq);
     }
 
     // find pending irq
-    // @param[in]     exc  an exception frame
-    // @param[in,out] irqp an irq number to be processed
+    // sexc  an exception frame
+    // irqp an irq number to be processed
     pub fn gicV3FindPendingIrq(exception_frame: *ExceptionFrame, irqp: *irqNo) u32 {
         _ = exception_frame;
         var rc: u32 = undefined;
@@ -124,33 +124,33 @@ pub const Gicd = struct {
     }
 
     // disable irq
-    // @param[in] irq irq number
+    // irq irq number
     pub fn gicdDisableInt(irq: irqNo) void {
         GicdRegMap.calcReg(GicdRegMap.icenabler, irq / regs.gicd_icenabler_per_reg).* = @as(u8, 1) << @truncate(u3, irq % regs.gicd_icenabler_per_reg);
     }
 
     // enable irq
-    // @param[in] irq irq number
+    // irq irq number
     pub fn gicdEnableInt(irq: irqNo) void {
         GicdRegMap.calcReg(GicdRegMap.isenabler, irq / regs.gicd_isenabler_per_reg).* = @as(u8, 1) << @truncate(u3, irq % regs.gicd_isenabler_per_reg);
     }
 
     // clear a pending interrupt
-    // @param[in] irq irq number
+    // irq irq number
     fn gicdClearPending(irq: irqNo) void {
         GicdRegMap.calcReg(GicdRegMap.icpendr, irq / regs.gicd_icpendr_per_reg).* = @as(u8, 1) << @truncate(u3, irq % regs.gicd_icpendr_per_reg);
     }
 
     // probe pending interrupt
-    // @param[in] irq irq number
+    // irq irq number
     fn gicdProbePending(irq: irqNo) bool {
         var is_pending = (GicdRegMap.calcReg(GicdRegMap.ispendr, (irq / regs.gicd_ispendr_per_reg)).* & (@as(u8, 1) << @truncate(u3, irq % regs.gicd_ispendr_per_reg)));
         return is_pending != 0;
     }
 
     // set an interrupt target processor
-    // @param[in] irq irq number
-    // @param[in] p   target processor mask
+    // irq irq number
+    // p   target processor mask
     // 0x1 processor 0
     // 0x2 processor 1
     // 0x4 processor 2
@@ -165,8 +165,8 @@ pub const Gicd = struct {
     }
 
     // set an interrupt priority
-    // @param[in] irq  irq number
-    // @param[in] prio interrupt priority in arm specific expression
+    // irq  irq number
+    // prio interrupt priority in arm specific expression
     fn gicdSetPriority(irq: irqNo, prio: u32) void {
         var shift: u5 = @truncate(u5, (irq % regs.gic_gicd_ipriority_per_reg) * regs.gic_gicd_ipriority_size_per_reg);
         var reg: u32 = regs.reg_gic_gicd_ipriorityr(irq / regs.gic_gicd_ipriority_per_reg).*;
@@ -176,8 +176,8 @@ pub const Gicd = struct {
     }
 
     // configure irq
-    // @param[in] irq     irq number
-    // @param[in] config  configuration value for gicd_icfgr
+    // irq     irq number
+    // config  configuration value for gicd_icfgr
     fn gicdConfig(irq: irqNo, config: u32) void {
         var shift: u5 = @truncate(u5, (irq % regs.gic_gicd_icfgr_per_reg) * regs.gic_gicd_icfgr_size_per_reg); // gicd_icfgr has 17 fields, each field has 2bits.
 

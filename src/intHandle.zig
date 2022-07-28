@@ -33,10 +33,10 @@ fn intHandle(exc: *gic.ExceptionFrame) void {
 
 fn handleException(exc: *gic.ExceptionFrame) void {
     utils.qemuDPrint("An exception occur:\n");
-    utils.qemuDPrint("elr: ");
+    utils.qemuDPrint("esr: ");
+    utils.qemuUintPrint(exc.esr_el1, utils.PrintStyle.string);
+    utils.qemuDPrint("elr,: ");
     utils.qemuUintPrint(exc.elr_el1, utils.PrintStyle.string);
-    utils.qemuDPrint(", esr: ");
-    utils.qemuUintPrint(exc.esr_el1, utils.PrintStyle.hex);
     utils.qemuDPrint("\n");
 
     utils.qemuDPrint("(");
@@ -51,7 +51,7 @@ fn handleException(exc: *gic.ExceptionFrame) void {
 
     var iss = @truncate(u25, exc.esr_el1);
     var il = @truncate(u1, exc.esr_el1 >> 25);
-    var ec = @truncate(u6, exc.esr_el1 >> 27);
+    var ec = @truncate(u6, exc.esr_el1 >> 26);
     var iss2 = @truncate(u5, exc.esr_el1 >> 32);
     _ = iss;
     _ = iss2;
@@ -61,15 +61,15 @@ fn handleException(exc: *gic.ExceptionFrame) void {
         return;
     };
 
+    utils.qemuDPrint("Exception Class(from esp reg): ");
+    utils.qemuDPrint(@tagName(ec_en));
+    utils.qemuDPrint("\n");
+
     if (il == 1) {
         utils.qemuDPrint("32 bit instruction trapped \n");
     } else {
         utils.qemuDPrint("16 bit instruction trapped \n");
     }
-
-    utils.qemuDPrint("Exception Class(from esp reg): ");
-    utils.qemuDPrint(@tagName(ec_en));
-    utils.qemuDPrint("\n");
 }
 
 // DAIF, Interrupt Mask Bits

@@ -55,10 +55,10 @@
     str x30, [sp, #16 * 16]
     mov x0, sp
 
-// call exception handler
+    // call exception handler
     bl \handler
 
-// exit exception
+    // exit exception
     b .exit_exception
 .endm
 
@@ -82,13 +82,13 @@ exception_vector_table:
     EXCEPTION_VECTOR common_trap_handler // el1_sync selected bc issue I'm debugging is a sync exception
 
 .org 0x0280
-    EXCEPTION_VECTOR el1_irq
+    EXCEPTION_VECTOR common_trap_handler
 
 .org 0x0300
-    EXCEPTION_VECTOR el1_fiq
+    EXCEPTION_VECTOR common_trap_handler
 
 .org 0x0380
-    EXCEPTION_VECTOR el1_error
+    EXCEPTION_VECTOR common_trap_handler
 
 
 .org 0x0400
