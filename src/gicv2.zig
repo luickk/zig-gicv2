@@ -1,4 +1,4 @@
-const regs = @import("gicv3Registers.zig");
+const regs = @import("gicv2Registers.zig");
 const GiccRegMap = regs.GiccRegMap;
 const GicdRegMap = regs.GicdRegMap;
 
@@ -8,11 +8,11 @@ const utils = @import("utils.zig");
 pub const irqNo: type = u32;
 
 // initialize gic irq controller
-pub fn gicV3Initialize() void {
+pub fn gicv2Initialize() void {
     Gicc.init();
     Gicd.init();
 
-    utils.qemuDPrint("gicv3 initialized \n");
+    utils.qemuDPrint("gicv2 initialized \n");
 }
 
 // reads interrupt data placed by exc. vec from the stack
@@ -52,14 +52,14 @@ pub const Gicc = struct {
     // send end of interrupt to irq line for gic
     // ctrlr   irq controller information
     // irq     irq number
-    pub fn gicV3Eoi(irq: irqNo) void {
+    pub fn gicv2Eoi(irq: irqNo) void {
         Gicd.gicdClearPending(irq);
     }
 
     // find pending irq
     // sexc  an exception frame
     // irqp an irq number to be processed
-    pub fn gicV3FindPendingIrq(exception_frame: *ExceptionFrame, irqp: *irqNo) u32 {
+    pub fn gicv2FindPendingIrq(exception_frame: *ExceptionFrame, irqp: *irqNo) u32 {
         _ = exception_frame;
         var rc: u32 = undefined;
         var i: irqNo = 0;

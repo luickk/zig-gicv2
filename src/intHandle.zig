@@ -1,4 +1,4 @@
-const gic = @import("gicv3.zig");
+const gic = @import("gicv2.zig");
 const Gicc = gic.Gicc;
 const Gicd = gic.Gicd;
 
@@ -21,13 +21,13 @@ fn intHandle(exc: *gic.ExceptionFrame) void {
     var rc: u32 = undefined;
 
     psw.pswDisableAndSaveInterrupt(&psw_temp);
-    rc = Gicc.gicV3FindPendingIrq(exc, &irq);
+    rc = Gicc.gicv2FindPendingIrq(exc, &irq);
     if (rc != 0) {
         psw.psw_restore_interrupt(&psw_temp);
         return;
     }
     Gicd.gicdDisableInt(irq); // Mask this irq
-    Gicc.gicV3Eoi(irq); // Send EOI for this irq line
+    Gicc.gicv2Eoi(irq); // Send EOI for this irq line
     Gicd.gicdEnableInt(irq); // unmask this irq line
 }
 

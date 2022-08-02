@@ -70,7 +70,7 @@ pub const GicdRegMap = struct {
     pub const spendsgir = @intToPtr(*volatile u32, gic_gicc_base + 0xf20);
     pub const sgir = @intToPtr(*volatile u32, 0xf00);
 
-    // from the gicv3 docs: "The number of implemented GICD_ICACTIVER<n> registers is (GICD_TYPER.ITLinesNumber+1). Registers are numbered from 0"
+    // from the gicv2 docs: "The number of implemented GICD_ICACTIVER<n> registers is (GICD_TYPER.ITLinesNumber+1). Registers are numbered from 0"
     pub fn calcReg(offset: *volatile u32, n: usize) *volatile u32 {
         return @intToPtr(*volatile u32, gic_gicd_base + @as(usize, @ptrToInt(offset)) + (n * 4));
     }

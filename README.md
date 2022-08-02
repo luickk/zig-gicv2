@@ -1,6 +1,6 @@
-# Zig gicv3
+# Zig gicv2
 
-This repository contains a basic generic interrupt controller for aarch64, specifically the a57 (tested on qemu). Gicv3 docs can be found [here](https://developer.arm.com/documentation/ihi0069/latest).
+This repository contains a basic generic interrupt controller for aarch64, specifically the a57 (tested on qemu). gicv2 docs can be found [here](https://developer.arm.com/documentation/ihi0069/latest).
 This project serves debugging purposes for another project of mine and as such does not cover all possible excepions/ interrupts but only the ones I needed.
 
 ## Usage
