@@ -1,21 +1,22 @@
 # Zig gicv2
 
-This repository contains a basic generic interrupt controller for aarch64, specifically the a57 (tested on qemu). gicv2 docs can be found [here](https://developer.arm.com/documentation/ihi0069/latest).
-This project serves debugging purposes for another project of mine and as such does not cover all possible excepions/ interrupts but only the ones I needed.
+This repository contains a basic generic interrupt controller for aarch64, specifically the a57 (tested with qemu). gicv2 docs can be found [here](https://developer.arm.com/documentation/ihi0069/latest).
 
-## Usage
+## Example Arm Timer Interrupt
 
-`intHandle.zig` provides the `common_trap_handler`fn which is exported and later linked with the `exception_vec.S` which is linked in the boot entry asm(before stack init) and tells the cpu where to find all interrupt handling functions.
+```zig
+	// disabling & clearing all pending irqs, setting all irqs to lowest priority, setting target core to 0
+	// enabling gicc and gicd
+	try Gic.init();
 
-boot.S:
-```asm  
-// setting up int. excp. vec. table
-ldr x0, = exception_vector_table
-msr vbar_el1, x0
-```
-
-The exception table also needs to be aligned properly so this linker file entry is mandatory:
-```
-. = ALIGN(0x800);
-.text.exceptions : { *(.text.exceptions) }
+	// setting timer irq to edge-triggered(0x2)
+	try Gic.Gicd.gicdConfig(Gic.InterruptIds.non_secure_physical_timer, 0x2);
+	// setting timer irq to highest priority 0
+	try Gic.Gicd.gicdSetPriority(Gic.InterruptIds.non_secure_physical_timer, 0);
+	// setting target to core 0 (1 for the register write)
+	try Gic.Gicd.gicdSetTarget(Gic.InterruptIds.non_secure_physical_timer, 1);
+	// clearing if pending so that new vector table call can be invoked
+	try Gic.Gicd.gicdClearPending(Gic.InterruptIds.non_secure_physical_timer);
+	// finally enabling timer interrupt
+	try Gic.Gicd.gicdEnableInt(Gic.InterruptIds.non_secure_physical_timer);
 ```
